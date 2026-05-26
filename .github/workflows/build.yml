@@ -23,12 +23,14 @@ jobs:
           sudo apt-get install -y wget unzip
           wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
           unzip commandlinetools-linux-11076708_latest.zip -d android-sdk
-          export ANDROID_HOME=$PWD/android-sdk
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
-          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
-          echo "PATH=$PATH" >> $GITHUB_ENV
-          yes | sdkmanager --licenses
-          sdkmanager "platforms;android-34" "build-tools;34.0.0"
+          mkdir -p android-sdk/cmdline-tools/latest
+          mv android-sdk/cmdline-tools/bin android-sdk/cmdline-tools/latest/
+          mv android-sdk/cmdline-tools/lib android-sdk/cmdline-tools/latest/
+          mv android-sdk/cmdline-tools/source.properties android-sdk/cmdline-tools/latest/
+          echo "ANDROID_HOME=$PWD/android-sdk" >> $GITHUB_ENV
+          echo "PATH=$PWD/android-sdk/cmdline-tools/latest/bin:$PATH" >> $GITHUB_ENV
+          yes | $PWD/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses
+          $PWD/android-sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0"
 
       - name: Configure Gradle mirrors
         run: |
