@@ -8,38 +8,38 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: alvrme/alpine-android:android-34-jdk17
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build APK using Docker
-        uses: docker://alvrme/alpine-android:android-34-jdk17
-        with:
-          args: |
-            /bin/sh -c "
-              cd /github/workspace
-              mkdir -p ~/.gradle
-              cat > ~/.gradle/init.gradle << 'EOF'
-              allprojects {
-                  buildscript {
-                      repositories {
-                          maven { url 'https://maven.aliyun.com/repository/google' }
-                          maven { url 'https://maven.aliyun.com/repository/central' }
-                          maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
-                          google()
-                          mavenCentral()
-                      }
-                  }
+      - name: Configure Gradle mirrors
+        run: |
+          mkdir -p ~/.gradle
+          cat > ~/.gradle/init.gradle << 'EOF'
+          allprojects {
+              buildscript {
                   repositories {
                       maven { url 'https://maven.aliyun.com/repository/google' }
                       maven { url 'https://maven.aliyun.com/repository/central' }
+                      maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
                       google()
                       mavenCentral()
                   }
               }
-              EOF
-              chmod +x gradlew
-              ./gradlew assembleDebug --no-daemon
-            "
+              repositories {
+                  maven { url 'https://maven.aliyun.com/repository/google' }
+                  maven { url 'https://maven.aliyun.com/repository/central' }
+                  google()
+                  mavenCentral()
+              }
+          }
+          EOF
+
+      - name: Build debug APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
